@@ -1,6 +1,10 @@
 package com.example.aqufishnewui20
 
+//import com.example.aqufishnewui20.screens.Screen1
+//import com.example.aqufishnewui20.workers.scheduleAlarm
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.animation.OvershootInterpolator
@@ -8,14 +12,22 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.room.Room
+import androidx.work.Configuration
+import androidx.work.WorkManager
 import com.example.aqufishnewui20.routes.MainScreen
-import com.example.aqufishnewui20.screens.MainPageDashboard
-import com.example.aqufishnewui20.ui.theme.AqufishNewUI20Theme
+import com.example.aqufishnewui20.screens.AppDatabase
+import com.example.aqufishnewui20.ui.theme.AppTheme
+import com.example.aqufishnewui20.viewModels.MainViewModel
+import com.example.aqufishnewui20.viewModels.MainViewModelFactory
 import com.example.aqufishnewui20.viewModels.SplashScreenViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : ComponentActivity() {
 
@@ -25,8 +37,20 @@ class MainActivity : ComponentActivity() {
 
 
 
+    private val workManager: WorkManager by lazy { WorkManager.getInstance(this) }
+    private val appDatabase: AppDatabase by lazy { AppDatabase.getDatabase(this) }
+
+    private val mainViewModel: MainViewModel by viewModels {
+        MainViewModelFactory(
+            alarmDao = appDatabase.alarmDao(),
+            workManager = workManager,
+            context = this
+        )
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         installSplashScreen().apply {
             setKeepOnScreenCondition(){
                 !viewModel.isReady.value
@@ -57,9 +81,15 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            AqufishNewUI20Theme {
+            AppTheme {
+                Surface(
+                    color = MaterialTheme.colorScheme.background
+                ){
+                    MainScreen(context = this, viewModel = mainViewModel)
+                }
                 //i have adde MainPageDashboard()
                 //MainPageDashboardPreview()
+
             }
         }
     }

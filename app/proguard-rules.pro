@@ -19,3 +19,6 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep class com.example.aqufishnewui20.viewModels.Users { *; }
+-keep class com.example.aqufishnewui20.viewModels.Feeder { *; }

@@ -1,7 +1,10 @@
 package com.example.aqufishnewui20.screens
 
+import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,6 +48,7 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "LoginScreen"
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LoginScreen(
     navController: NavHostController,
@@ -65,7 +69,8 @@ fun LoginScreen(
 
     Surface(){
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
+                .background(MaterialTheme.colorScheme.onPrimary),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -91,11 +96,9 @@ fun LoginScreen(
                         "Login successful",
                         color = MaterialTheme.colorScheme.primary
                     )
-                    LaunchedEffect(Unit) {
+                    //delay(500)
+                    navController.navigate("dashboard")
 
-                        delay(500)
-                        navController.navigate("dashboard")
-                    }
                 }
                 false -> Text("Login failed", color = MaterialTheme.colorScheme.error)
                 null -> {}

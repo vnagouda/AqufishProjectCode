@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
@@ -62,6 +63,14 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.room.common)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.ui.text.google.fonts)
+    //implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.common)
+    //implementation(libs.androidx.ui.desktop)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -85,10 +94,47 @@ dependencies {
     implementation ("androidx.compose.ui:ui-viewbinding:1.3.2")
     implementation ("androidx.webkit:webkit:1.6.0")
 
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.8.1")
+
+    // Room
+    //apply plugin: 'kotlin-kapt'
+    implementation("androidx.room:room-runtime:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+
+    // Other libraries
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+    //implementation("androidx.media3:media3-exoplayer:1.4.0")
+    //implementation("androidx.media3:media3-exoplayer-rtsp:1.4.0")
+    implementation (libs.exoplayer.v2181)
+
+    implementation("com.google.android.exoplayer:exoplayer-core:2.19.1")
+    //implementation("com.google.android.exoplayer:exoplayer:2.19.1")
+    //implementation ("com.google.android.exoplayer:extension-rtsp:2.18.1")
+    //implementation ("com.google.android.exoplayer:extension-core:2.18.1")
+    implementation("com.google.android.exoplayer:exoplayer-rtsp:2.19.1")
+    //implementation("androidx.media3:media3-exoplayer-rtsp:1.4.0-rc-01")
+    //implementation("androidx.media3:media3-ui:1.4.0")
+    implementation ("com.google.android.exoplayer:exoplayer-ui:2.19.1")
+
+    implementation("androidx.compose.foundation:foundation")
+
+    //implementation(libs.androidx.media3.exoplayer.core)
+
+
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
 
     implementation ("com.squareup.okhttp3:okhttp:4.12.0")
 
     implementation(libs.androidx.core.splashscreen)
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+
+    //implementation ("tv.danmaku.ijk.media:ijkplayer:0.8.8")
+    //implementation ("com.mcxiaoke.ijk.media:ijkplayer-java:0.6.2")
+    //implementation ("com.github.dynckathline:ijkplayer-exo2:1.0")
+
 }

@@ -83,7 +83,7 @@ fun sendRequest2(url: String) {
 
 fun sendRequest(url: String) {
 
-    Log.d(TAG, "Sending HTTP request to URL: $url")
+    Log.d("SendRequest", "Sending HTTP request to URL: $url")
 
     val client = OkHttpClient()
 
@@ -94,12 +94,12 @@ fun sendRequest(url: String) {
     client.newCall(request).enqueue(object : Callback {
 
         override fun onFailure(call: okhttp3.Call, e: IOException) {
-            Log.e(TAG, "Failed to send HTTP request: ${e.message}", e)
+            Log.e("SendRequest", "Failed to send HTTP request: ${e.message}", e)
             TODO("Not yet implemented")
         }
 
         override fun onResponse(call: okhttp3.Call, response: Response) {
-            Log.d(TAG, "HTTP request successful")
+            Log.d("SendRequest", "HTTP request successful")
             TODO("Not yet implemented")
         }
     })
