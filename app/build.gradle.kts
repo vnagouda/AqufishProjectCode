@@ -120,6 +120,16 @@ dependencies {
     implementation ("com.google.android.exoplayer:exoplayer-ui:2.19.1")
 
     implementation("androidx.compose.foundation:foundation")
+    //implementation ("org.videolan.android:libvlc-all:3.6.0") // Adjust to the latest version available
+
+    //implementation ("org.videolan.android:vlc-android-sdk:3.6.0") // Adjust to the latest version available
+
+    //implementation("androidx.media3:media3-exoplayer:1.4.1-rc-01")
+    //implementation("androidx.media3:media3-exoplayer-dash:1.4.1-rc-01")
+    //implementation("androidx.media3:media3-ui:1.4.1-rc-01")
+    //implementation("androidx.media3:media3-exoplayer-hls:1.4.1-rc-01")
+    //implementation ("androidx.media3:media3-exoplayer-rtsp:1.4.1-rc-01")
+
 
     //implementation(libs.androidx.media3.exoplayer.core)
 

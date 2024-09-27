@@ -144,7 +144,7 @@ fun CardDetails(feederName: String, ipAddress: String, navController: NavHostCon
             .height(150.dp) // Increased height
             .padding(8.dp)
             .clickable {
-                navController.navigate("live_monitoring/${ipAddress}")
+                navController.navigate("live_monitoring")
             },
         elevation = CardDefaults.cardElevation(6.dp),
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary)

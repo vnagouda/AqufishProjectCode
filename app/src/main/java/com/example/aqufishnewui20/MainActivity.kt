@@ -3,7 +3,6 @@ package com.example.aqufishnewui20
 //import com.example.aqufishnewui20.screens.Screen1
 //import com.example.aqufishnewui20.workers.scheduleAlarm
 import android.animation.ObjectAnimator
-import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -17,13 +16,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.room.Room
-import androidx.work.Configuration
 import androidx.work.WorkManager
 import com.example.aqufishnewui20.routes.MainScreen
 import com.example.aqufishnewui20.screens.AppDatabase
+import com.example.aqufishnewui20.screens.MonitoringScreen
 import com.example.aqufishnewui20.ui.theme.AppTheme
 import com.example.aqufishnewui20.viewModels.MainViewModel
 import com.example.aqufishnewui20.viewModels.MainViewModelFactory
@@ -86,6 +82,9 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ){
                     MainScreen(context = this, viewModel = mainViewModel)
+
+                    //MonitoringScreen(context = this, viewModel = mainViewModel, navController = null)
+
                 }
                 //i have adde MainPageDashboard()
                 //MainPageDashboardPreview()

@@ -1,7 +1,22 @@
 package com.example.aqufishnewui20.screens
 
 
+//import androidx.media3.common.PlaybackException
+//import androidx.media3.common.PlaybackException
+//import androidx.media3.common.Player
+//import androidx.media3.common.util.UnstableApi
+//import androidx.media3.common.MediaItem
+//import androidx.media3.common.PlaybackException
+//import androidx.media3.common.Player
+//import androidx.media3.common.util.UnstableApi
+//import androidx.media3.exoplayer.DefaultRenderersFactory
+//import androidx.media3.exoplayer.ExoPlayer
+//import androidx.media3.ui.PlayerView
+
+
 import android.content.Context
+import android.net.Uri
+import android.net.http.SslCertificate.restoreState
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -9,7 +24,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.compose.BackHandler
-import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +35,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -31,7 +46,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,36 +54,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-//import androidx.media3.common.PlaybackException
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.util.UnstableApi
-//import androidx.media3.common.PlaybackException
-//import androidx.media3.common.Player
-//import androidx.media3.common.util.UnstableApi
-//import androidx.media3.common.MediaItem
-//import androidx.media3.common.PlaybackException
-//import androidx.media3.common.Player
-//import androidx.media3.common.util.UnstableApi
-//import androidx.media3.exoplayer.DefaultRenderersFactory
-//import androidx.media3.exoplayer.ExoPlayer
-//import androidx.media3.ui.PlayerView
+
 import androidx.navigation.NavHostController
 import com.example.aqufishnewui20.viewModels.MainViewModel
 import com.example.aqufishnewui20.viewModels.sendRequest2
 import com.google.android.exoplayer2.DefaultLoadControl
-import com.google.android.exoplayer2.DefaultRenderersFactory
-
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.source.ConcatenatingMediaSource
-import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.play.integrity.internal.al
-import com.google.firebase.storage.FirebaseStorage
 
 //import com.google.android.exoplayer2.ExoPlayer
 
@@ -532,30 +536,14 @@ import com.google.firebase.storage.FirebaseStorage
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MonitoringScreen(context: Context, viewModel: MainViewModel, navController: NavHostController, ipAddress: String?) {
+fun MonitoringScreen(context: Context, viewModel: MainViewModel, navController: NavHostController?) {
 
     var isMotorOn by remember { mutableStateOf(false) }
 
     var motorSpeed by remember { mutableStateOf(0) }
 
     //val context = LocalContext.current
-    val storageReference = FirebaseStorage.getInstance().reference
 
-    // Reference to the videos in Firebase Storage
-    val video1Ref = storageReference.child("AqufishTestVideos/WizardOfOz1.mp4")
-    val video2Ref = storageReference.child("AqufishTestVideos/WizardOfOz2.mp4")
-
-    // Mutable state to hold the video URLs
-    var videoUrls by remember { mutableStateOf<List<String>>(emptyList()) }
-
-    // Fetch the video URLs from Firebase Storage
-    LaunchedEffect(Unit) {
-        video1Ref.downloadUrl.addOnSuccessListener { uri1 ->
-            video2Ref.downloadUrl.addOnSuccessListener { uri2 ->
-                videoUrls = listOf(uri1.toString(), uri2.toString())
-            }
-        }
-    }
 
     // Play the videos if URLs are available
 
@@ -577,11 +565,19 @@ fun MonitoringScreen(context: Context, viewModel: MainViewModel, navController: 
 //            elevation = CardDefaults.cardElevation(16.dp),
 //        ) {
 //        }
-        val ipAdd = "rtsp://$ipAddress/mystream"
+        val ipAdd = "http://13.213.74.217/hls/stream.m3u8"
+        val ipAdd2 = "rtsp://1.tcp.ap.ngrok.io:20002/mystream"
 
-        LiveVideoPlayerExoPlayer2(ipAdd)
+        //HlsExoPlayer(ipAdd)
+        LiveVideoPlayerExoPlayer3(ipAdd2)
+//        try {
+//            LiveVideoPlayerExoPlayer2(ipAdd)
+//            Log.d("MonitoringScreen", "LiveVideoPlayerExoPlayer2 loaded successfully.")
+//        } catch (e: Exception) {
+//            Log.e("MonitoringScreen", "Error loading LiveVideoPlayerExoPlayer2: ${e.message}", e)
+//        }
 
-        //WebViewLiveVideoPlayer(navController)
+//        WebViewLiveVideoPlayer(navController)
 //        if (videoUrls.isNotEmpty()) {
 //
 //        } else {
@@ -653,7 +649,7 @@ fun MonitoringScreen(context: Context, viewModel: MainViewModel, navController: 
             modifier = Modifier
                 .padding(16.dp)
         ) {
-            Text(text = "IP Address: $ipAddress")
+            Text(text = "IP Address: ")
 
             Text(text = "Fish Feed Dispensed: 50 kg")
             Text(text = "Fish Weight: 100 g each on average")
@@ -683,111 +679,670 @@ fun MonitoringScreen(context: Context, viewModel: MainViewModel, navController: 
 
 }
 
+//@OptIn(UnstableApi::class)
+//@Composable
+//fun HlsExoPlayer(
+//    streamUrl: String,
+//    modifier: Modifier = Modifier
+//) {
+//    val context = LocalContext.current
+//    val lifecycleOwner = LocalLifecycleOwner.current
+//
+//    // State to track player loading
+//    var isBuffering by remember { mutableStateOf(true) }
+//
+//    // Initialize ExoPlayer with logging
+//    val exoPlayer = remember {
+//        try {
+//            val trackSelector = DefaultTrackSelector(context)
+//            ExoPlayer.Builder(context)
+//                .setTrackSelector(trackSelector)
+//                .build().apply {
+//                    val mediaItem = MediaItem.fromUri(Uri.parse(streamUrl))
+//                    setMediaItem(mediaItem)
+//                    prepare()
+//                    playWhenReady = true
+//
+//                    Log.d("HlsExoPlayer", "ExoPlayer initialized and ready to play.")
+//                }
+//        } catch (e: Exception) {
+//            Log.e("HlsExoPlayer", "Error initializing ExoPlayer: ${e.localizedMessage}")
+//            null
+//        }
+//    }
+//
+//    // Handle lifecycle events for proper player release
+//    DisposableEffect(lifecycleOwner) {
+//        if (exoPlayer != null) {
+//            val lifecycleObserver = LifecycleEventObserver { _, event ->
+//                when (event) {
+//                    Lifecycle.Event.ON_PAUSE -> {
+//                        Log.d("HlsExoPlayer", "Pausing ExoPlayer.")
+//                        exoPlayer.playWhenReady = false
+//                        exoPlayer.pause()
+//                    }
+//                    Lifecycle.Event.ON_RESUME -> {
+//                        Log.d("HlsExoPlayer", "Resuming ExoPlayer.")
+//                        exoPlayer.playWhenReady = true
+//                        exoPlayer.play()
+//                    }
+//                    Lifecycle.Event.ON_DESTROY -> {
+//                        Log.d("HlsExoPlayer", "Releasing ExoPlayer.")
+//                        exoPlayer.release()
+//                    }
+//                    else -> {}
+//                }
+//            }
+//
+//            lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
+//
+//            // Return DisposableEffectResult to remove observer and release player
+//            onDispose {
+//                lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
+//                exoPlayer.release()
+//                Log.d("HlsExoPlayer", "ExoPlayer and LifecycleObserver released.")
+//            }
+//        } else {
+//            onDispose {
+//                Log.e("HlsExoPlayer", "ExoPlayer was null, nothing to release.")
+//            }
+//        }
+//    }
+//
+//    // Layout for showing ExoPlayer or a loading indicator
+//    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+//        exoPlayer?.let {
+//            AndroidView(
+//                factory = {
+//                    PlayerView(context).apply {
+//                        player = exoPlayer
+//                        useController = true // Show playback controls
+//                        setKeepContentOnPlayerReset(true)
+//
+//                        // Set the resize mode to maintain aspect ratio
+//                        setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT)
+//                    }
+//                },
+//                update = {
+//                    exoPlayer.addListener(object : Player.Listener {
+//                        override fun onIsLoadingChanged(isLoading: Boolean) {
+//                            isBuffering = isLoading
+//                        }
+//
+//                        override fun onPlayerError(error: PlaybackException) {
+//                            Log.e("HlsExoPlayer", "Playback error: ${error.message}, Error code: ${error.errorCode}, Cause: ${error.cause}")
+//                        }
+//                    })
+//                },
+//                modifier = Modifier.wrapContentSize() // Ensure the video respects aspect ratio
+//            )
+//        }
+//
+//        // Show loading indicator while buffering
+//        if (isBuffering) {
+//            CircularProgressIndicator(
+//                modifier = Modifier.align(Alignment.Center)
+//            )
+//        }
+//    }
+//}
+
+
+
+//@SuppressLint("SetJavaScriptEnabled")
+//@Composable
+//fun LiveMonitoringScreen() {
+//    val TAG = "ExoPlayerLogging"
+//
+//    // Get the current context
+//    val context = LocalContext.current
+//
+//    // Initialize the ExoPlayer
+//    val exoPlayer = remember {
+//        ExoPlayer.Builder(context).build().apply {
+//            // Define the media source (HLS Stream)
+//            val mediaItem = MediaItem.fromUri("http://13.213.74.217/hls/stream.m3u8")
+//            setMediaItem(mediaItem)
+//
+//            // Prepare the player
+//            prepare()
+//
+//            // Start playback when ready
+//            playWhenReady = true
+//
+//            // Add a listener for logging events
+//            addListener(object : Player.Listener {
+//                override fun onPlaybackStateChanged(playbackState: Int) {
+//                    when (playbackState) {
+//                        Player.STATE_BUFFERING -> Log.d(TAG, "Player is buffering...")
+//                        Player.STATE_READY -> Log.d(TAG, "Player is ready to play!")
+//                        Player.STATE_ENDED -> Log.d(TAG, "Playback ended.")
+//                        Player.STATE_IDLE -> Log.d(TAG, "Player is idle.")
+//                    }
+//                }
+//
+//                override fun onPlayerError(error: PlaybackException) {
+//                    Log.e(TAG, "Playback error: ${error.message}")
+//                }
+//
+//                override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+//                    Log.d(TAG, "Play when ready: $playWhenReady, reason: $reason")
+//                }
+//            })
+//        }
+//    }
+//
+//    // Clean up ExoPlayer resources when the Composable is destroyed
+//    DisposableEffect(
+//        AndroidView(
+//            modifier = Modifier
+//                .fillMaxSize(), // Fill screen size
+//            factory = {
+//                PlayerView(context).apply {
+//                    player = exoPlayer
+//                    useController = true // Enable media controls
+//                }
+//            }
+//        )
+//    ) {
+//        onDispose {
+//            Log.d(TAG, "Releasing ExoPlayer...")
+//            exoPlayer.release() // Ensure player is released properly
+//        }
+//    }
+//}
+//
+//private const val TAG = "LiveVideoPlayerWebView"
+//
+//@Composable
+//fun LiveVideoPlayerWebView1(videoUrl: String, modifier: Modifier = Modifier) {
+//    AndroidView(
+//        modifier = modifier.fillMaxSize(),
+//        factory = { context ->
+//            WebView(context).apply {
+//                // Enable JavaScript and media playback
+//                settings.javaScriptEnabled = true
+//                settings.mediaPlaybackRequiresUserGesture = false
+//                settings.cacheMode = WebSettings.LOAD_NO_CACHE
+//
+//                // Configure WebViewClient to handle page loads within WebView
+//                webViewClient = object : WebViewClient() {
+//                    override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+//                        super.onPageStarted(view, url, favicon)
+//                        Log.d(TAG, "Page started loading: $url")
+//                    }
+//
+//                    override fun onPageFinished(view: WebView?, url: String?) {
+//                        super.onPageFinished(view, url)
+//                        Log.d(TAG, "Page finished loading: $url")
+//                    }
+//
+//                    override fun onReceivedError(
+//                        view: WebView?,
+//                        request: android.webkit.WebResourceRequest?,
+//                        error: WebResourceError?
+//                    ) {
+//                        super.onReceivedError(view, request, error)
+//                        Log.e(TAG, "Error loading page: ${error?.description}")
+//                    }
+//                }
+//
+//                // Configure WebChromeClient for handling media (video player UI)
+//                webChromeClient = object : WebChromeClient() {
+//                    override fun onProgressChanged(view: WebView?, newProgress: Int) {
+//                        super.onProgressChanged(view, newProgress)
+//                        Log.d(TAG, "Loading progress: $newProgress%")
+//                    }
+//                }
+//
+//                // Load the video URL
+//                loadUrl(videoUrl)
+//            }
+//        }
+//    )
+//}
+//
+//@Composable
+//fun LiveVideoPlayerWebView(url: String) {
+//    val context = LocalContext.current
+//    val webViewState = remember { mutableStateOf(false) }
+//
+//    AndroidView(
+//        factory = {
+//            WebView(context).apply {
+//                settings.javaScriptEnabled = true
+//                settings.mediaPlaybackRequiresUserGesture = false
+//                webViewClient = WebViewClient()
+//
+//                // Check if the URL is valid
+//                try {
+//                    loadUrl(url)
+//                    webViewState.value = true
+//                } catch (e: Exception) {
+//                    Log.e("LiveVideoPlayerWebView", "Error loading URL: $url", e)
+//                    webViewState.value = false
+//                }
+//            }
+//        },
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(240.dp)
+//    )
+//
+//    if (!webViewState.value) {
+//        // Show an error if the WebView fails to load the video
+//        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+//            Text(
+//                text = "Error loading video",
+//                color = MaterialTheme.colorScheme.error,
+//                textAlign = TextAlign.Center
+//            )
+//        }
+//    }
+//}
+//
+//@Composable
+//fun LiveVideoPlayerExoPlayer4() {
+//    val context = LocalContext.current
+//    val url = "http://13.213.74.217/hls/stream.m3u8"
+//    val isLoading = remember { mutableStateOf(true) }
+//    val errorMessage = remember { mutableStateOf<String?>(null) }
+//
+//    Log.d("LiveVideoPlayerExoPlayer3", "Video URL: $url")
+//
+//    val exoPlayer = remember {
+//        try {
+//            val loadControl = DefaultLoadControl.Builder().build()
+//            ExoPlayer.Builder(context).setLoadControl(loadControl).build().apply {
+//                val mediaItem = MediaItem.fromUri(url)
+//                setMediaItem(mediaItem)
+//
+//                Log.d("LiveVideoPlayerExoPlayer3", "Preparing ExoPlayer")
+//                prepare()
+//
+//                playWhenReady = true
+//
+//                addListener(object : Player.Listener {
+//                    override fun onPlaybackStateChanged(state: Int) {
+//                        when (state) {
+//                            Player.STATE_BUFFERING -> {
+//                                Log.d("ExoPlayerState", "Buffering...")
+//                                isLoading.value = true
+//                                errorMessage.value = null
+//                            }
+//                            Player.STATE_READY -> {
+//                                Log.d("ExoPlayerState", "Ready to play.")
+//                                isLoading.value = false
+//                                errorMessage.value = null
+//                            }
+//                            Player.STATE_ENDED -> {
+//                                Log.d("ExoPlayerState", "Playback ended.")
+//                                isLoading.value = false
+//                            }
+//                            Player.STATE_IDLE -> {
+//                                Log.d("ExoPlayerState", "Player is idle.")
+//                                isLoading.value = true
+//                            }
+//                        }
+//                    }
+//
+//                    override fun onPlayerError(error: PlaybackException) {
+//                        Log.e("ExoPlayerError", "Playback error: ${error.message}", error)
+//                        isLoading.value = false
+//                        errorMessage.value = error.message
+//                    }
+//                })
+//            }
+//        } catch (e: Exception) {
+//            Log.e("LiveVideoPlayerExoPlayer3", "Error creating ExoPlayer", e)
+//            null
+//        }
+//    }
+//
+//    DisposableEffect(url) {
+//        onDispose {
+//            Log.d("LiveVideoPlayerExoPlayer3", "Releasing ExoPlayer")
+//            exoPlayer?.release()
+//        }
+//    }
+//
+//    Box(modifier = Modifier.fillMaxWidth().height(240.dp)) {
+//        if (errorMessage.value != null) {
+//            Log.e("LiveVideoPlayerExoPlayer3", "Displaying error: ${errorMessage.value}")
+//            Text(
+//                text = "Error: ${errorMessage.value}",
+//                color = MaterialTheme.colorScheme.error,
+//                modifier = Modifier.align(Alignment.Center),
+//                textAlign = TextAlign.Center
+//            )
+//        } else {
+//            AndroidView(
+//                factory = {
+//                    PlayerView(context).apply {
+//                        Log.d("LiveVideoPlayerExoPlayer3", "Setting up PlayerView")
+//                        player = exoPlayer
+//                        layoutParams = FrameLayout.LayoutParams(
+//                            FrameLayout.LayoutParams.MATCH_PARENT,
+//                            FrameLayout.LayoutParams.MATCH_PARENT
+//                        )
+//                    }
+//                },
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(240.dp)
+//            )
+//
+//            if (isLoading.value) {
+//                Log.d("LiveVideoPlayerExoPlayer3", "Displaying loading indicator")
+//                CircularProgressIndicator(
+//                    modifier = Modifier.align(Alignment.Center),
+//                    color = MaterialTheme.colorScheme.primary
+//                )
+//            }
+//        }
+//    }
+//}
+//
+//
+//@Composable
+//fun LiveVideoPlayerExoPlayer3(url: String) {
+//    val context = LocalContext.current
+//    val isLoading = remember { mutableStateOf(true) }
+//    val errorMessage = remember { mutableStateOf<String?>(null) }
+//
+//    // Logging URL to ensure correct value is passed
+//    Log.d("LiveVideoPlayerExoPlayer3", "Video URL: $url")
+//
+//    // Create ExoPlayer instance
+//    val exoPlayer = remember {
+//        val loadControl = DefaultLoadControl.Builder().build()
+//        ExoPlayer.Builder(context).setLoadControl(loadControl).build().apply {
+//            val mediaItem = MediaItem.fromUri(url)
+//            setMediaItem(mediaItem)
+//            prepare()
+//            playWhenReady = true
+//
+//            addListener(object : Player.Listener {
+//                override fun onPlaybackStateChanged(state: Int) {
+//                    when (state) {
+//                        Player.STATE_BUFFERING -> {
+//                            Log.d("ExoPlayerState", "Buffering...")
+//                            isLoading.value = true
+//                            errorMessage.value = null // Clear error when loading
+//                        }
+//                        Player.STATE_READY -> {
+//                            Log.d("ExoPlayerState", "Ready to play.")
+//                            isLoading.value = false
+//                            errorMessage.value = null
+//                        }
+//                        Player.STATE_ENDED -> {
+//                            Log.d("ExoPlayerState", "Playback ended.")
+//                            isLoading.value = false
+//                        }
+//                        Player.STATE_IDLE -> {
+//                            Log.d("ExoPlayerState", "Player is idle.")
+//                            isLoading.value = true
+//                        }
+//                        else -> {
+//                            Log.d("ExoPlayerState", "Unknown state: $state")
+//                        }
+//                    }
+//                }
+//
+//                override fun onPlayerError(error: PlaybackException) {
+//                    Log.e("ExoPlayerError", "Playback error: ${error.message}", error)
+//                    isLoading.value = false
+//                    errorMessage.value = error.message
+//                }
+//            })
+//        }
+//    }
+//
+//    DisposableEffect(url) {
+//        onDispose {
+//            Log.d("LiveVideoPlayerExoPlayer3", "Releasing ExoPlayer")
+//            exoPlayer.release()
+//        }
+//    }
+//
+//    // Display the video player or the error/loading state
+//    Box(modifier = Modifier.fillMaxWidth().height(240.dp)) {
+//        if (errorMessage.value != null) {
+//            Log.e("LiveVideoPlayerExoPlayer3", "Displaying error: ${errorMessage.value}")
+//            Text(
+//                text = "Error: ${errorMessage.value}",
+//                color = MaterialTheme.colorScheme.error,
+//                modifier = Modifier.align(Alignment.Center),
+//                textAlign = TextAlign.Center
+//            )
+//        } else {
+//            AndroidView(
+//                factory = {
+//                    PlayerView(context).apply {
+//                        Log.d("LiveVideoPlayerExoPlayer3", "Setting up PlayerView")
+//                        player = exoPlayer
+//                        layoutParams = FrameLayout.LayoutParams(
+//                            FrameLayout.LayoutParams.MATCH_PARENT,
+//                            FrameLayout.LayoutParams.MATCH_PARENT
+//                        )
+//                    }
+//                },
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(240.dp)
+//            )
+//
+//            // Show CircularProgressIndicator while video is buffering
+//            if (isLoading.value) {
+//                Log.d("LiveVideoPlayerExoPlayer3", "Displaying loading indicator")
+//                CircularProgressIndicator(
+//                    modifier = Modifier.align(Alignment.Center),
+//                    color = MaterialTheme.colorScheme.primary
+//                )
+//            }
+//        }
+//    }
+//}
+//
+//
+
+
+@OptIn(UnstableApi::class)
 @Composable
 fun LiveVideoPlayerExoPlayer2(url: String) {
     val context = LocalContext.current
+    val isLoading = remember { mutableStateOf(true) }
+    val errorMessage = remember { mutableStateOf<String?>(null) }
 
-    Log.d("LiveVideoPlayerExoPlayer2", "Creating ExoPlayer instance")
+    // Log video URL before setting up ExoPlayer
+    Log.d("LiveVideoPlayerExoPlayer2", "RTSP URL received: $url")
+
     val exoPlayer = remember {
-        val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(
-                50000,  // Minimum buffer duration before starting playback (50 seconds)
-                150000, // Maximum buffer duration during playback (150 seconds)
-                2500,  // Buffer required before starting playback (15 seconds)
-                5000   // Buffer required after rebuffering (10 seconds)
-            )
-            .setTargetBufferBytes(-1) // Set a custom target buffer size (60 MB)
-            .setPrioritizeTimeOverSizeThresholds(true) // Prioritize time-based buffering
-            //.setBackBuffer(60000, false) // Retain 60 seconds of back buffer
-            .build()
-        ExoPlayer.Builder(context).setLoadControl(loadControl).build().apply {
-            val mediaItem = MediaItem.fromUri(url)
-            Log.d("LiveVideoPlayerExoPlayer2", "Setting media item with RTSP URL: $url")
-            setMediaItem(mediaItem)
-            prepare()
-            playWhenReady = true
-            addListener(object : Player.Listener {
-                override fun onPlaybackStateChanged(state: Int) {
-                    Log.d("LiveVideoPlayerExoPlayer2", "Playback state changed: $state")
-                }
+        try {
+            val loadControl = DefaultLoadControl.Builder().build()
+            ExoPlayer.Builder(context).setLoadControl(loadControl).build().apply {
+                val mediaItem = MediaItem.fromUri(url)
+                Log.d("LiveVideoPlayerExoPlayer2", "Setting media item with URL: $url")
+                setMediaItem(mediaItem)
+                prepare()
+                playWhenReady = true
 
-                override fun onPlayerError(error: PlaybackException) {
-                    Log.e("LiveVideoPlayerExoPlayer2", "Player error: ${error.message}", error)
-                }
-            })
+                // Add a listener to track the playback state and errors
+                addListener(object : Player.Listener {
+                    override fun onPlaybackStateChanged(state: Int) {
+                        when (state) {
+                            Player.STATE_BUFFERING -> {
+                                Log.d("LiveVideoPlayerExoPlayer2", "Buffering...")
+                                isLoading.value = true
+                            }
+                            Player.STATE_READY -> {
+                                Log.d("LiveVideoPlayerExoPlayer2", "Ready to play.")
+                                isLoading.value = false
+                                errorMessage.value = null
+                            }
+                            Player.STATE_ENDED -> {
+                                Log.d("LiveVideoPlayerExoPlayer2", "Playback ended.")
+                                isLoading.value = false
+                            }
+                            Player.STATE_IDLE -> {
+                                Log.d("LiveVideoPlayerExoPlayer2", "Player is idle.")
+                                isLoading.value = true
+                            }
+                        }
+                    }
+
+                    override fun onPlayerError(error: PlaybackException) {
+                        Log.e("LiveVideoPlayerExoPlayer2", "Player error: ${error.message}", error)
+                        errorMessage.value = error.message
+                        isLoading.value = false
+                    }
+                })
+            }
+        } catch (e: Exception) {
+            Log.e("LiveVideoPlayerExoPlayer2", "Error creating ExoPlayer: ${e.message}", e)
+            null
         }
     }
 
     DisposableEffect(url) {
         Log.d("LiveVideoPlayerExoPlayer2", "Disposing ExoPlayer")
         onDispose {
-            exoPlayer.release()
+            exoPlayer?.release()
             Log.d("LiveVideoPlayerExoPlayer2", "ExoPlayer released")
         }
     }
 
-    AndroidView(
-        factory = {
-            PlayerView(context).apply {
-                Log.d("LiveVideoPlayerExoPlayer2", "Setting player to PlayerView")
-                player = exoPlayer
-                layoutParams = FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    FrameLayout.LayoutParams.MATCH_PARENT
-                )
-            }
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(240.dp)
-    )
-}
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(240.dp)) {
+        if (isLoading.value) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
 
-@Composable
-fun MockVideoPlayer(videoUrls: List<String>) {
-    val context = LocalContext.current
-
-    val exoPlayer = remember {
-        ExoPlayer.Builder(context).build().apply {
-            val mediaSources = videoUrls.map { url ->
-                MediaItem.fromUri(url)
-            }
-
-            val concatenatingMediaSource = ConcatenatingMediaSource().apply {
-                mediaSources.forEach { mediaItem ->
-                    addMediaSource(DefaultMediaSourceFactory(context).createMediaSource(mediaItem))
-                }
-            }
-
-            setMediaSource(concatenatingMediaSource)
-            prepare()
-            playWhenReady = true
-            repeatMode = Player.REPEAT_MODE_ALL // Repeat all items
+        if (errorMessage.value != null) {
+            Text(
+                text = "Error: ${errorMessage.value}",
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.align(Alignment.Center),
+                textAlign = TextAlign.Center
+            )
+        } else {
+            AndroidView(
+                factory = {
+                    PlayerView(context).apply {
+                        Log.d("LiveVideoPlayerExoPlayer2", "Setting player to PlayerView")
+                        player = exoPlayer
+                        layoutParams = FrameLayout.LayoutParams(
+                            FrameLayout.LayoutParams.MATCH_PARENT,
+                            FrameLayout.LayoutParams.MATCH_PARENT
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp)
+            )
         }
     }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            exoPlayer.release()
-        }
-    }
-
-    AndroidView(
-        factory = {
-            PlayerView(context).apply {
-                player = exoPlayer
-                useController = false
-                layoutParams = FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    FrameLayout.LayoutParams.MATCH_PARENT
-                )
-            }
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(240.dp)
-    )
 }
+//
+//@Composable
+//fun HlsStreamPlayer(url: String) {
+//    val context = LocalContext.current
+//
+//    // Remember the ExoPlayer instance and set it up with HLS media
+//    val exoPlayer = remember {
+//        ExoPlayer.Builder(context).build().apply {
+//            try {
+//                val mediaItem = MediaItem.Builder()
+//                    .setUri(Uri.parse(url))
+//                    .setMimeType(MimeTypes.APPLICATION_M3U8) // Explicitly set the MIME type for HLS
+//                    .build()
+//
+//                setMediaItem(mediaItem)
+//                prepare()
+//                playWhenReady = true // Autoplay when ready
+//            } catch (e: Exception) {
+//                Log.e("HlsStreamPlayer", "ExoPlayer initialization error: ${e.message}")
+//                e.printStackTrace()
+//            }
+//        }
+//    }
+//
+//    // Ensure that ExoPlayer resources are released when no longer needed
+//    DisposableEffect(key1 = exoPlayer) {
+//        onDispose {
+//            exoPlayer.release()
+//        }
+//    }
+//
+//    // Use AndroidView to create a PlayerView that links to the ExoPlayer instance
+//    AndroidView(
+//        factory = {
+//            PlayerView(context).apply {
+//                player = exoPlayer
+//                useController = true // Enable playback controls
+//                layoutParams = FrameLayout.LayoutParams(
+//                    ViewGroup.LayoutParams.MATCH_PARENT,
+//                    ViewGroup.LayoutParams.MATCH_PARENT
+//                )
+//            }
+//        },
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(240.dp) // Set the height as needed
+//    )
+//}
+//
+//
+//@Composable
+//fun MockVideoPlayer(videoUrls: List<String>) {
+//    val context = LocalContext.current
+//
+//    val exoPlayer = remember {
+//        ExoPlayer.Builder(context).build().apply {
+//            val mediaSources = videoUrls.map { url ->
+//                MediaItem.fromUri(url)
+//            }
+//
+//            val concatenatingMediaSource = ConcatenatingMediaSource().apply {
+//                mediaSources.forEach { mediaItem ->
+//                    addMediaSource(DefaultMediaSourceFactory(context).createMediaSource(mediaItem))
+//                }
+//            }
+//
+//            setMediaSource(concatenatingMediaSource)
+//            prepare()
+//            playWhenReady = true
+//            repeatMode = Player.REPEAT_MODE_ALL // Repeat all items
+//        }
+//    }
+//
+//    DisposableEffect(Unit) {
+//        onDispose {
+//            exoPlayer.release()
+//        }
+//    }
+//
+//    AndroidView(
+//        factory = {
+//            PlayerView(context).apply {
+//                player = exoPlayer
+//                useController = false
+//                layoutParams = FrameLayout.LayoutParams(
+//                    FrameLayout.LayoutParams.MATCH_PARENT,
+//                    FrameLayout.LayoutParams.MATCH_PARENT
+//                )
+//            }
+//        },
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(240.dp)
+//    )
+//}
 
 
 
@@ -905,7 +1460,7 @@ fun MjpegStreamWebView(url: String, modifier: Modifier = Modifier, onBack: () ->
 @Composable
 fun WebViewLiveVideoPlayer(navController: NavHostController) {
     MjpegStreamWebView(
-        url = "http://192.168.47.14:81/stream",
+        url = "http://13.213.74.217/hls/stream",
         modifier = Modifier
             .fillMaxWidth()
             .height(240.dp),
@@ -915,3 +1470,59 @@ fun WebViewLiveVideoPlayer(navController: NavHostController) {
         }
     )
 }
+
+@Composable
+fun LiveVideoPlayerExoPlayer3(url: String) {
+    val context = LocalContext.current
+    Log.d("LiveVideoPlayerExoPlayer2", "Composable called")
+
+    val exoPlayer = remember(url) {
+        Log.d("LiveVideoPlayerExoPlayer2", "Creating ExoPlayer instance")
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(50000, 150000, 2500, 5000)
+            .setTargetBufferBytes(-1)
+            .setPrioritizeTimeOverSizeThresholds(true)
+            .build()
+        ExoPlayer.Builder(context).setLoadControl(loadControl).build().apply {
+            val mediaItem = MediaItem.fromUri(url)
+            Log.d("LiveVideoPlayerExoPlayer2", "Setting media item with RTSP URL: $url")
+            setMediaItem(mediaItem)
+            prepare()
+            playWhenReady = true
+            addListener(object : Player.Listener {
+                override fun onPlaybackStateChanged(state: Int) {
+                    Log.d("LiveVideoPlayerExoPlayer2", "Playback state changed: $state")
+                }
+
+                override fun onPlayerError(error: PlaybackException) {
+                    Log.e("LiveVideoPlayerExoPlayer2", "Player error: ${error.message}", error)
+                }
+            })
+        }
+    }
+
+    DisposableEffect(url) {
+        onDispose {
+            Log.d("LiveVideoPlayerExoPlayer2", "Disposing ExoPlayer")
+            exoPlayer.release()
+            Log.d("LiveVideoPlayerExoPlayer2", "ExoPlayer released")
+        }
+    }
+
+    AndroidView(
+        factory = {
+            PlayerView(context).apply {
+                Log.d("LiveVideoPlayerExoPlayer2", "Setting player to PlayerView")
+                player = exoPlayer
+                layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+                )
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(240.dp)
+    )
+}
+
