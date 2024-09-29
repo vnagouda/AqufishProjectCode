@@ -4,6 +4,7 @@ package com.example.aqufishnewui20.routes
 //import com.example.aqufishnewui20.screens.AlarmManagerUI
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,10 +43,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.aqufishnewui20.R
 import com.example.aqufishnewui20.screens.LoginScreen
 import com.example.aqufishnewui20.screens.MainPageDashboard
@@ -89,9 +92,16 @@ fun NavGraph(
 
         }
 
-        composable("live_monitoring") { backStackEntry ->
-            //val ipAddress = backStackEntry.arguments?.getString("ipAddress")
-            MonitoringScreen(context = context, viewModel = viewModel, navController = navController)
+        composable(route = "live_monitoring/{ipAddress}",
+            arguments = listOf(navArgument("ipAddress") {
+                type = NavType.StringType
+            })
+        ) {
+                backStackEntry ->
+            val ipAddress = backStackEntry.arguments?.getString("ipAddress")
+            Log.d("NavGraph", "Navigating to Live Monitoring Screen with IP: $ipAddress")
+            MonitoringScreen(context = context, viewModel = viewModel, navController = navController, ipAddress = ipAddress!!)
+
         }
 
         composable("analytics") {

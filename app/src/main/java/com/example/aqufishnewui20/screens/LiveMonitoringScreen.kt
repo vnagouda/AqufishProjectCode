@@ -536,7 +536,11 @@ import com.google.android.exoplayer2.ui.PlayerView
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MonitoringScreen(context: Context, viewModel: MainViewModel, navController: NavHostController?) {
+fun MonitoringScreen(context: Context, viewModel: MainViewModel, navController: NavHostController?, ipAddress: String) {
+
+    val decodedIpAddress = Uri.decode(ipAddress)
+
+    Log.d("MonitoringScreen", "Monitoring Screen Loaded with IP: $decodedIpAddress")
 
     var isMotorOn by remember { mutableStateOf(false) }
 
@@ -565,11 +569,11 @@ fun MonitoringScreen(context: Context, viewModel: MainViewModel, navController: 
 //            elevation = CardDefaults.cardElevation(16.dp),
 //        ) {
 //        }
-        val ipAdd = "http://13.213.74.217/hls/stream.m3u8"
+        val ipAdd = "rtsp://1.tcp.ap.ngrok.io:20616/mystream"
         val ipAdd2 = "rtsp://1.tcp.ap.ngrok.io:20002/mystream"
 
         //HlsExoPlayer(ipAdd)
-        LiveVideoPlayerExoPlayer3(ipAdd2)
+        LiveVideoPlayerExoPlayer3(ipAddress)
 //        try {
 //            LiveVideoPlayerExoPlayer2(ipAdd)
 //            Log.d("MonitoringScreen", "LiveVideoPlayerExoPlayer2 loaded successfully.")

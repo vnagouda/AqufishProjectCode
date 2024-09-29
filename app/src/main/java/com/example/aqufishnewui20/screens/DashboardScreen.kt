@@ -1,6 +1,7 @@
 package com.example.aqufishnewui20.screens
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -135,8 +136,7 @@ fun UserAndFeederDetails(viewModel: MainViewModel) {
 }
 
 @Composable
-fun CardDetails(feederName: String, ipAddress: String, navController: NavHostController, duration: Int, dailyFeedWeight: Float, location: String){
-
+fun CardDetails(feederName: String, ipAddress: String, navController: NavHostController, duration: Int, dailyFeedWeight: Float, location: String, count: Int){
 
     Card(
         modifier = Modifier
@@ -144,7 +144,9 @@ fun CardDetails(feederName: String, ipAddress: String, navController: NavHostCon
             .height(150.dp) // Increased height
             .padding(8.dp)
             .clickable {
-                navController.navigate("live_monitoring")
+                val encodedIpAddress = Uri.encode(ipAddress)
+                Log.d("CardDetails", "Navigating to live_monitoring with IP: $encodedIpAddress")
+                navController.navigate("live_monitoring/$encodedIpAddress")
             },
         elevation = CardDefaults.cardElevation(6.dp),
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary)
@@ -237,7 +239,9 @@ fun FeederOptions(
         ){
             Spacer(modifier = Modifier.height(16.dp))
 
+            var count = 0
             userFeeders?.forEach { feeder ->
+
                 Log.d("FeederOptions", "Feeders data observed: $feeder")
                 Row(
                     modifier = Modifier
@@ -259,8 +263,10 @@ fun FeederOptions(
                         duration = 60,
                         dailyFeedWeight = 100f,
                         location = feeder.location,
-                        navController = navController
+                        navController = navController,
+                        count = count
                     )
+                    count++
                 }
             }
         }
